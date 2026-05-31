@@ -1,0 +1,159 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f7f8fa;
+  color: #222;
+  line-height: 1.6;
+}
+
+header {
+  background: #1f2937;
+  color: white;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+header h1 {
+  max-width: 1100px;
+  margin: 0 auto 16px auto;
+  font-size: 2.4rem;
+  line-height: 1.2;
+}
+
+header p {
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: 1.1rem;
+  color: #d1d5db;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.logo-container img {
+  max-height: 100px;
+  max-width: 250px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+main {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+section {
+  background: white;
+  margin-bottom: 24px;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+h2 {
+  color: #111827;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
+h3 {
+  color: #1f2937;
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+section p {
+  max-width: 950px;
+}
+
+footer {
+  text-align: center;
+  padding: 32px;
+  color: #666;
+}
+
+/* -------------------------
+   Plot Layout
+------------------------- */
+
+.plot-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.plot-card {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.plot-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.plot-card p {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #555;
+}
+
+.plot-card iframe {
+  width: 100%;
+  height: 850px;
+  border: none;
+  border-radius: 10px;
+  background: white;
+}
+
+.placeholder {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  text-align: center;
+}
+
+/* -------------------------
+   Responsive Design
+------------------------- */
+
+@media (max-width: 900px) {
+  header h1 {
+    font-size: 1.8rem;
+  }
+
+  section {
+    padding: 20px;
+  }
+
+  .plot-card {
+    padding: 16px;
+  }
+
+  .plot-card iframe {
+    height: 650px;
+  }
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developing Novel AI-driven In-Silico Methods for Discovering Safe and Effective Opioid Antagonists</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header>
+    <h1>Developing Novel AI-driven In-Silico Methods for Discovering Safe and Effective Opioid Antagonists</h1>
+
+    <div class="logo-container">
+        <img src="images/UMKC-Logo.png" alt="UMKC School of Science and Engineering">
+        <img src="images/NSF-Logo.png" alt="National Science Foundation">
+        <img src="images/AI-MADA Logo.png" alt="AI-MADA">
+    </div>
+
+    <p>
+        A recommendation-based approach for identifying promising opioid antagonist candidates.
+    </p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Project Overview</h2>
+      <p>
+        This project explores AI-driven in-silico methods for identifying promising drug candidates related to opioid receptor activity.
+        Rather than using a purely generative approach to create entirely new molecules, we frame the task as a recommendation problem.
+      </p>
+
+      <p>
+        The goal is to begin with a set of potentially useful drugs, including FDA-approved drugs and compounds from similar drug databases,
+        and use our model to help recommend which candidates are best suited for further investigation as safer or more effective opioid-related substitutes.
+      </p>
+    </section>
+
+    <section>
+      <h2>Recommendation Framing</h2>
+      <p>
+        In a generative drug-discovery pipeline, the model attempts to design new molecules from scratch. Our approach instead asks:
+        given a list of existing or candidate molecules, which ones appear most promising for the desired biological task?
+      </p>
+
+      <p>
+        This framing is useful for drug repurposing because existing drugs may already have known safety profiles, pharmacological data,
+        or regulatory histories. In this project, we focus on opioid-related compounds and investigate whether existing drugs can be
+        ranked or embedded in a way that highlights candidates with desirable binding behavior.
+      </p>
+    </section>
+
+    <section>
+      <h2>Model and Loss Function</h2>
+      <p>
+        Our model is based on a variational autoencoder architecture with an additional affinity-ranking head. The encoder maps molecular
+        feature vectors into a lower-dimensional latent representation, while the decoder encourages the latent space to preserve information
+        needed to reconstruct the original molecular feature input.
+      </p>
+
+      <p>
+        The total loss combines three major terms: reconstruction loss, KL divergence loss, and a weighted pairwise ranking loss.
+        The reconstruction loss encourages the latent space to preserve molecular descriptor information. The KL loss regularizes the
+        latent distribution. The ranking loss encourages molecules with higher pKi values to receive higher predicted affinity scores
+        than molecules with lower pKi values. The ranking term ignores near-ties and weights larger pKi differences more heavily. :contentReference[oaicite:0]{index=0}
+      </p>
+
+      <p>
+        In other words, the model is not only trying to separate molecules by binding affinity. It is also trying to preserve broader
+        molecular structure and drug-property information through reconstruction and latent-space regularization.
+      </p>
+    </section>
+
+    <section>
+      <h2>How to Read the Plots</h2>
+
+      <h3>Raw Feature Space vs. Latent Space</h3>
+      <p>
+        The raw feature plots show UMAP and t-SNE applied directly to the original molecular descriptor features. These plots represent
+        the structure of the data before it has passed through the learned model.
+      </p>
+
+      <p>
+        The latent-space plots show UMAP and t-SNE applied to the model’s learned latent representation. These plots help us evaluate
+        whether the model reorganizes molecules into a space that better reflects affinity and other learned molecular relationships.
+      </p>
+
+      <h3>UMAP vs. t-SNE</h3>
+      <p>
+        UMAP and t-SNE are dimensionality-reduction methods used to visualize high-dimensional data in 3D. UMAP often emphasizes broader
+        neighborhood structure, while t-SNE often emphasizes local clusters. Because they preserve different aspects of structure, comparing
+        both can reveal whether patterns are stable or method-dependent.
+      </p>
+
+      <h3>True pKi</h3>
+      <p>
+        pKi is derived from Ki, where higher pKi generally indicates stronger binding affinity. In the plots colored by true pKi,
+        warmer or higher-value regions represent molecules with stronger measured binding affinity, while lower pKi regions represent
+        weaker binders.
+      </p>
+    </section>
+
+    <section id="visualizations">
+      <h2>Interactive 3D Visualizations</h2>
+      <p>
+        These plots compare molecule embeddings from raw feature data and learned latent-space representations.
+      </p>
+
+      <div class="plot-grid">
+
+        <div class="plot-card">
+          <h3>Raw Feature Space UMAP: True pKi</h3>
+          <p>UMAP applied directly to raw Orexin1 descriptor features.</p>
+          <iframe src="graphs/raw_umap_3d_pki.html"></iframe>
+        </div>
+
+        <div class="plot-card">
+          <h3>Raw Feature Space t-SNE: True pKi</h3>
+          <p>t-SNE applied directly to raw Orexin1 descriptor features.</p>
+          <iframe src="graphs/raw_t_sne_3d_pki.html"></iframe>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space UMAP: True pKi</h3>
+          <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 20</p>
+          <iframe src="graphs/umap_3d_pki_neighbors20_mindist01.html"></iframe>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space UMAP: True pKi</h3>
+          <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200</p>
+          <iframe src="graphs/umap_3d_pki_neighbors200_mindist01.html"></iframe>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space t-SNE: True pKi</h3>
+          <p>Perplexity = 100</p>
+          <iframe src="graphs/t_sne_3d_pki_perplexity100.html"></iframe>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space t-SNE: True pKi</h3>
+          <p>Perplexity = 1000</p>
+          <iframe src="graphs/t_sne_3d_pki_perplexity1000.html"></iframe>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Drug Molecule Project</p>
+  </footer>
+</body>
+</html>
