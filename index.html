@@ -132,6 +132,17 @@
         </div>
 
         <div class="plot-card">
+          <h3>Latent Space UMAP: Affinity Groups</h3>
+          <p>
+            UMAP projection of the learned latent space grouped by true pKi:
+            weak binders, middle 50%, and strong binders.
+
+            UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200
+          </p>
+          <iframe src="graphs/umap_3d_affinity_groups_neighbors200_mindist01.html"></iframe>
+        </div>
+
+        <div class="plot-card">
           <h3>Latent Space t-SNE: True pKi</h3>
           <p>Perplexity = 100</p>
           <iframe src="graphs/t_sne_3d_pki_perplexity100.html"></iframe>
