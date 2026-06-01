@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  background: #f7f8fa;
+  background: #cfd8e3;
   color: #222;
   line-height: 1.6;
 }
@@ -54,8 +54,8 @@ section {
   background: white;
   margin-bottom: 24px;
   padding: 32px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 h1,
@@ -83,7 +83,7 @@ section p {
 footer {
   text-align: center;
   padding: 32px;
-  color: #666;
+  color: #4b5563;
 }
 
 /* -------------------------
@@ -105,6 +105,7 @@ footer {
   background: white;
   border-radius: 14px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .plot-card h3 {
@@ -137,6 +138,56 @@ footer {
 }
 
 /* -------------------------
+   Results Table
+------------------------- */
+
+.results-table {
+  width: 100%;
+  max-width: 700px;
+  border-collapse: collapse;
+  margin: 24px 0;
+}
+
+.results-table th,
+.results-table td {
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  text-align: center;
+}
+
+.results-table th {
+  background: #f3f4f6;
+  font-weight: bold;
+}
+
+.results-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+/* -------------------------
+   Figures
+------------------------- */
+
+.figure-container {
+  text-align: center;
+  margin: 24px 0;
+}
+
+.result-figure {
+  width: 100%;
+  max-width: 700px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.figure-caption {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+  margin-top: 8px;
+}
+
+/* -------------------------
    Responsive Design
 ------------------------- */
 
@@ -145,8 +196,21 @@ footer {
     font-size: 1.8rem;
   }
 
+  main {
+    padding: 0 12px;
+  }
+
   section {
     padding: 20px;
+  }
+
+  .logo-container {
+    gap: 28px;
+  }
+
+  .logo-container img {
+    max-height: 80px;
+    max-width: 200px;
   }
 
   .plot-card {
@@ -155,5 +219,48 @@ footer {
 
   .plot-card iframe {
     height: 650px;
+  }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 44px 16px;
+  }
+
+  header h1 {
+    font-size: 1.55rem;
+  }
+
+  header p {
+    font-size: 1rem;
+  }
+
+  main {
+    margin: 20px auto;
+    padding: 0 8px;
+  }
+
+  section {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .plot-grid {
+    gap: 28px;
+  }
+
+  .plot-card {
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  .plot-card iframe {
+    height: 560px;
+  }
+
+  .results-table th,
+  .results-table td {
+    padding: 8px;
+    font-size: 0.9rem;
   }
 }

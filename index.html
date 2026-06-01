@@ -12,19 +12,21 @@
     <h1>Developing Novel AI-driven In-Silico Methods for Discovering Safe and Effective Opioid Antagonists</h1>
 
     <div class="logo-container">
-        <img src="images/UMKC-Logo.png" alt="UMKC School of Science and Engineering">
-        <img src="images/NSF-Logo.png" alt="National Science Foundation">
-        <img src="images/AI-MADA Logo.png" alt="AI-MADA">
+      <img src="images/UMKC-Logo.png" alt="UMKC School of Science and Engineering">
+      <img src="images/NSF-Logo.png" alt="National Science Foundation">
+      <img src="images/AI-MADA Logo.png" alt="AI-MADA">
     </div>
 
     <p>
-        A recommendation-based approach for identifying promising opioid antagonist candidates.
+      A recommendation-based approach for identifying promising opioid antagonist candidates.
     </p>
   </header>
 
   <main>
+
     <section>
       <h2>Project Overview</h2>
+
       <p>
         This project explores AI-driven in-silico methods for identifying promising drug candidates related to opioid receptor activity.
         Rather than using a purely generative approach to create entirely new molecules, we frame the task as a recommendation problem.
@@ -38,6 +40,7 @@
 
     <section>
       <h2>Recommendation Framing</h2>
+
       <p>
         In a generative drug-discovery pipeline, the model attempts to design new molecules from scratch. Our approach instead asks:
         given a list of existing or candidate molecules, which ones appear most promising for the desired biological task?
@@ -51,7 +54,28 @@
     </section>
 
     <section>
+      <h2>Ki, pKi, and Binding Affinity</h2>
+
+      <p>
+        Ki, or inhibition constant, is a measure of how strongly a molecule binds to a biological target. In general, a lower Ki value
+        indicates stronger binding because less of the compound is needed to inhibit or bind the target.
+      </p>
+
+      <p>
+        Because Ki values can span several orders of magnitude, it is common to transform Ki into pKi using a negative logarithm.
+        This makes the values easier to compare and places large affinity differences onto a more manageable numerical scale.
+      </p>
+
+      <p>
+        In this project, higher pKi values correspond to stronger binding affinity, while lower pKi values correspond to weaker binding.
+        Our model uses pKi as the ranking target: molecules with stronger measured affinity should receive higher learned ranking scores
+        than molecules with weaker measured affinity.
+      </p>
+    </section>
+
+    <section>
       <h2>Model and Loss Function</h2>
+
       <p>
         Our model is based on a variational autoencoder architecture with an additional affinity-ranking head. The encoder maps molecular
         feature vectors into a lower-dimensional latent representation, while the decoder encourages the latent space to preserve information
@@ -59,10 +83,52 @@
       </p>
 
       <p>
-        The total loss combines three major terms: reconstruction loss, KL divergence loss, and a weighted pairwise ranking loss.
-        The reconstruction loss encourages the latent space to preserve molecular descriptor information. The KL loss regularizes the
-        latent distribution. The ranking loss encourages molecules with higher pKi values to receive higher predicted affinity scores
-        than molecules with lower pKi values. The ranking term ignores near-ties and weights larger pKi differences more heavily.
+        The total loss combines three major terms: reconstruction loss, KL divergence loss, and a weighted pairwise hinge-ranking loss.
+        These terms work together so that the model learns a latent space that preserves molecular information while also organizing
+        molecules according to binding affinity.
+      </p>
+
+      <h3>Reconstruction Loss</h3>
+
+      <p>
+        The reconstruction loss encourages the decoder to rebuild the original molecular feature vector from the latent representation.
+        This prevents the latent space from becoming useful only for ranking and helps preserve broader molecular descriptor information.
+      </p>
+
+      <h3>KL Divergence Loss</h3>
+
+      <p>
+        The KL divergence term regularizes the latent space so that encoded molecules follow a smoother and more structured distribution.
+        This is a standard part of variational autoencoders and helps prevent the latent space from becoming irregular or overly memorized.
+      </p>
+
+      <h3>Weighted Pairwise Hinge-Ranking Loss</h3>
+
+      <p>
+        The ranking loss compares molecules in pairs. For a pair of molecules, if molecule A has a higher true pKi than molecule B,
+        then the model is encouraged to assign molecule A a higher learned affinity score than molecule B.
+      </p>
+
+      <p>
+        This loss is margin-based. It does not merely ask the model to rank the stronger binder slightly above the weaker binder; it asks
+        the stronger binder to exceed the weaker binder by at least a fixed margin. In our current experiments, this margin is set to
+        <strong>0.25</strong> score units.
+      </p>
+
+      <p>
+        The hinge loss only penalizes pairs that violate the desired ordering or fail to satisfy the margin. Once a pair is correctly
+        ordered with enough separation, that pair contributes no additional ranking penalty.
+      </p>
+
+      <p>
+        The loss also ignores near-ties in pKi. If two molecules have nearly identical measured affinity, the model is not forced to learn
+        a potentially noisy or biologically insignificant ordering between them.
+      </p>
+
+      <p>
+        Finally, the loss weights each pair by the magnitude of the pKi difference. A pair with a large affinity gap, such as a very strong
+        binder compared against a very weak binder, contributes more strongly than a pair with only a small affinity difference.
+      </p>
 
       <p>
         In other words, the model is not only trying to separate molecules by binding affinity. It is also trying to preserve broader
@@ -71,9 +137,97 @@
     </section>
 
     <section>
-      <h2>How to Read the Plots</h2>
+      <h2>Latent Space Organization and Affinity Separation</h2>
+
+      <p>
+        One of the primary goals of our model is not only to reconstruct molecular
+        descriptors, but also to organize molecules in a latent representation that
+        reflects biologically meaningful binding behavior.
+      </p>
+
+      <p>
+        To evaluate this, we compared dimensionality-reduction visualizations
+        generated directly from the raw molecular descriptor space against
+        visualizations generated from the model's learned latent space.
+      </p>
+
+      <p>
+        We measured how well strong binders and weak binders separate by training a
+        simple logistic classifier on the projected coordinates and computing the
+        Area Under the Receiver Operating Characteristic Curve (AUC).
+      </p>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Representation</th>
+            <th>UMAP AUC</th>
+            <th>t-SNE AUC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Raw Molecular Features</td>
+            <td>0.8252</td>
+            <td>0.7744</td>
+          </tr>
+          <tr>
+            <td>Learned Latent Representation</td>
+            <td>0.9922</td>
+            <td>0.9925</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        These results indicate that the learned latent representation provides
+        substantially better separation between high-affinity and low-affinity
+        molecules than the original descriptor space. While the raw features already
+        contain some affinity information, the model reorganizes the molecular
+        representation into a structure that aligns much more strongly with binding
+        affinity.
+      </p>
+
+      <h3>Ranking Score vs. Experimental Affinity</h3>
+
+      <p>
+        We also evaluated the relationship between the model's learned ranking score
+        and experimentally measured binding affinity on a held-out test set.
+      </p>
+
+      <p>
+        A strong positive relationship indicates that molecules assigned higher
+        ranking scores by the model also tend to exhibit stronger experimental
+        binding affinity. The model achieved a Spearman rank correlation of
+        <strong>ρ = 0.8457</strong>, demonstrating strong agreement between the
+        learned ranking and the true affinity ordering of molecules.
+      </p>
+
+      <div class="figure-container">
+        <img
+          src="images/spearman_correlation.png"
+          alt="Spearman correlation between learned ranking score and true pKi"
+          class="result-figure"
+        >
+      </div>
+
+      <p class="figure-caption">
+        Figure: Learned ranking score versus experimentally measured pKi on the
+        held-out test set (Spearman ρ = 0.8457).
+      </p>
+
+      <p>
+        Taken together, these results suggest that the latent space has learned a
+        biologically meaningful organization that preserves molecular information
+        while simultaneously improving affinity-related separation.
+      </p>
+    </section>
+
+    <section>
+      <h2>Visualization Interpretation</h2>
 
       <h3>Raw Feature Space vs. Latent Space</h3>
+
       <p>
         The raw feature plots show UMAP and t-SNE applied directly to the original molecular descriptor features. These plots represent
         the structure of the data before it has passed through the learned model.
@@ -85,22 +239,40 @@
       </p>
 
       <h3>UMAP vs. t-SNE</h3>
+
       <p>
         UMAP and t-SNE are dimensionality-reduction methods used to visualize high-dimensional data in 3D. UMAP often emphasizes broader
-        neighborhood structure, while t-SNE often emphasizes local clusters. Because they preserve different aspects of structure, comparing
-        both can reveal whether patterns are stable or method-dependent.
+        neighborhood structure, while t-SNE often emphasizes local clusters. Because they preserve different aspects of structure,
+        comparing both can reveal whether patterns are stable or method-dependent.
       </p>
 
       <h3>True pKi</h3>
+
       <p>
         pKi is derived from Ki, where higher pKi generally indicates stronger binding affinity. In the plots colored by true pKi,
-        warmer or higher-value regions represent molecules with stronger measured binding affinity, while lower pKi regions represent
-        weaker binders.
+        higher-value regions represent molecules with stronger measured binding affinity, while lower pKi regions represent weaker binders.
+      </p>
+
+      <h3>Affinity Groups</h3>
+
+      <p>
+        Some visualizations divide molecules into three groups based on their measured affinity:
+      </p>
+
+      <ul>
+        <li><strong>Strong binders</strong> — top 25% of pKi values</li>
+        <li><strong>Middle 50%</strong> — intermediate pKi values</li>
+        <li><strong>Weak binders</strong> — bottom 25% of pKi values</li>
+      </ul>
+
+      <p>
+        This grouping makes it easier to visually assess whether the learned latent space separates strong and weak binders into distinct regions.
       </p>
     </section>
 
     <section id="visualizations">
       <h2>Interactive 3D Visualizations</h2>
+
       <p>
         These plots compare molecule embeddings from raw feature data and learned latent-space representations.
       </p>
@@ -136,7 +308,6 @@
           <p>
             UMAP projection of the learned latent space grouped by true pKi:
             weak binders, middle 50%, and strong binders.
-
             UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200
           </p>
           <iframe src="graphs/umap_3d_affinity_groups_neighbors200_mindist01.html"></iframe>
@@ -144,8 +315,8 @@
 
         <div class="plot-card">
           <h3>Latent Space t-SNE: True pKi</h3>
-          <p>Perplexity = 100</p>
-          <iframe src="graphs/t_sne_3d_pki_perplexity100.html"></iframe>
+          <p>Perplexity = 30</p>
+          <iframe src="graphs/t_sne_3d_pki_perplexity30.html"></iframe>
         </div>
 
         <div class="plot-card">
@@ -156,10 +327,12 @@
 
       </div>
     </section>
+
   </main>
 
   <footer>
     <p>Drug Molecule Project</p>
   </footer>
+
 </body>
 </html>
