@@ -283,3 +283,27 @@ footer {
     height: 330px;
   }
 }
+
+.mobile-plot-link {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .plot-card iframe {
+    display: none;
+  }
+
+  .plot-card {
+    height: auto;
+  }
+
+  .mobile-plot-link {
+    display: inline-block;
+    padding: 12px 16px;
+    background: #1f2937;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+}
