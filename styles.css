@@ -125,6 +125,7 @@ footer {
   border: none;
   border-radius: 10px;
   background: white;
+  display: block;
 }
 
 .placeholder {
@@ -262,5 +263,23 @@ footer {
   .results-table td {
     padding: 8px;
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .plot-card {
+    overflow: hidden;
+  }
+
+  .plot-card iframe {
+    width: 1400px;
+    height: 900px;
+    transform: scale(0.33);
+    transform-origin: top left;
+    border-radius: 10px;
+  }
+
+  .plot-card {
+    height: 330px;
   }
 }
