@@ -17,21 +17,16 @@
       <img src="images/AI-MADA Logo.png" alt="AI-MADA">
     </div>
 
-    <p>
-      A recommendation-based approach for identifying promising opioid antagonist candidates.
-    </p>
+    <p>A recommendation-based approach for identifying promising opioid antagonist candidates.</p>
   </header>
 
   <main>
-
     <section>
       <h2>Project Overview</h2>
-
       <p>
         This project explores AI-driven in-silico methods for identifying promising drug candidates related to opioid receptor activity.
         Rather than using a purely generative approach to create entirely new molecules, we frame the task as a recommendation problem.
       </p>
-
       <p>
         The goal is to begin with a set of potentially useful drugs, including FDA-approved drugs and compounds from similar drug databases,
         and use our model to help recommend which candidates are best suited for further investigation as safer or more effective opioid-related substitutes.
@@ -40,12 +35,10 @@
 
     <section>
       <h2>Recommendation Framing</h2>
-
       <p>
         In a generative drug-discovery pipeline, the model attempts to design new molecules from scratch. Our approach instead asks:
         given a list of existing or candidate molecules, which ones appear most promising for the desired biological task?
       </p>
-
       <p>
         This framing is useful for drug repurposing because existing drugs may already have known safety profiles, pharmacological data,
         or regulatory histories. In this project, we focus on opioid-related compounds and investigate whether existing drugs can be
@@ -55,17 +48,14 @@
 
     <section>
       <h2>Ki, pKi, and Binding Affinity</h2>
-
       <p>
         Ki, or inhibition constant, is a measure of how strongly a molecule binds to a biological target. In general, a lower Ki value
         indicates stronger binding because less of the compound is needed to inhibit or bind the target.
       </p>
-
       <p>
         Because Ki values can span several orders of magnitude, it is common to transform Ki into pKi using a negative logarithm.
         This makes the values easier to compare and places large affinity differences onto a more manageable numerical scale.
       </p>
-
       <p>
         In this project, higher pKi values correspond to stronger binding affinity, while lower pKi values correspond to weaker binding.
         Our model uses pKi as the ranking target: molecules with stronger measured affinity should receive higher learned ranking scores
@@ -75,13 +65,11 @@
 
     <section>
       <h2>Model and Loss Function</h2>
-
       <p>
         Our model is based on a variational autoencoder architecture with an additional affinity-ranking head. The encoder maps molecular
         feature vectors into a lower-dimensional latent representation, while the decoder encourages the latent space to preserve information
         needed to reconstruct the original molecular feature input.
       </p>
-
       <p>
         The total loss combines three major terms: reconstruction loss, KL divergence loss, and a weighted pairwise hinge-ranking loss.
         These terms work together so that the model learns a latent space that preserves molecular information while also organizing
@@ -89,47 +77,39 @@
       </p>
 
       <h3>Reconstruction Loss</h3>
-
       <p>
         The reconstruction loss encourages the decoder to rebuild the original molecular feature vector from the latent representation.
         This prevents the latent space from becoming useful only for ranking and helps preserve broader molecular descriptor information.
       </p>
 
       <h3>KL Divergence Loss</h3>
-
       <p>
-        The KL divergence term regularizes the latent space so that encoded molecules follow a smoother and more structured distribution.
+        The KL divergence term regularizes the latent space so that encoded molecules follow a smoother and structured distribution.
         This is a standard part of variational autoencoders and helps prevent the latent space from becoming irregular or overly memorized.
       </p>
 
       <h3>Weighted Pairwise Hinge-Ranking Loss</h3>
-
       <p>
         The ranking loss compares molecules in pairs. For a pair of molecules, if molecule A has a higher true pKi than molecule B,
         then the model is encouraged to assign molecule A a higher learned affinity score than molecule B.
       </p>
-
       <p>
         This loss is margin-based. It does not merely ask the model to rank the stronger binder slightly above the weaker binder; it asks
         the stronger binder to exceed the weaker binder by at least a fixed margin. In our current experiments, this margin is set to
         <strong>0.25</strong> score units.
       </p>
-
       <p>
         The hinge loss only penalizes pairs that violate the desired ordering or fail to satisfy the margin. Once a pair is correctly
         ordered with enough separation, that pair contributes no additional ranking penalty.
       </p>
-
       <p>
         The loss also ignores near-ties in pKi. If two molecules have nearly identical measured affinity, the model is not forced to learn
         a potentially noisy or biologically insignificant ordering between them.
       </p>
-
       <p>
         Finally, the loss weights each pair by the magnitude of the pKi difference. A pair with a large affinity gap, such as a very strong
         binder compared against a very weak binder, contributes more strongly than a pair with only a small affinity difference.
       </p>
-
       <p>
         In other words, the model is not only trying to separate molecules by binding affinity. It is also trying to preserve broader
         molecular structure and drug-property information through reconstruction and latent-space regularization.
@@ -138,19 +118,16 @@
 
     <section>
       <h2>Latent Space Organization and Affinity Separation</h2>
-
       <p>
         One of the primary goals of our model is not only to reconstruct molecular
         descriptors, but also to organize molecules in a latent representation that
         reflects biologically meaningful binding behavior.
       </p>
-
       <p>
         To evaluate this, we compared dimensionality-reduction visualizations
         generated directly from the raw molecular descriptor space against
         visualizations generated from the model's learned latent space.
       </p>
-
       <p>
         We measured how well strong binders and weak binders separate by training a
         simple logistic classifier on the projected coordinates and computing the
@@ -161,20 +138,26 @@
         <thead>
           <tr>
             <th>Representation</th>
-            <th>UMAP AUC</th>
-            <th>t-SNE AUC</th>
+            <th>2D UMAP AUC</th>
+            <th>2D t-SNE AUC</th>
+            <th>3D UMAP AUC</th>
+            <th>3D t-SNE AUC</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>Raw Molecular Features</td>
-            <td>0.8252</td>
-            <td>0.7744</td>
+            <td>0.8506</td>
+            <td>0.7873</td>
+            <td>0.8239</td>
+            <td>0.7822</td>
           </tr>
           <tr>
             <td>Learned Latent Representation</td>
-            <td>0.9922</td>
-            <td>0.9925</td>
+            <td>0.9822</td>
+            <td>0.9929</td>
+            <td>0.9918</td>
+            <td>0.9932</td>
           </tr>
         </tbody>
       </table>
@@ -182,19 +165,15 @@
       <p>
         These results indicate that the learned latent representation provides
         substantially better separation between high-affinity and low-affinity
-        molecules than the original descriptor space. While the raw features already
-        contain some affinity information, the model reorganizes the molecular
-        representation into a structure that aligns much more strongly with binding
-        affinity.
+        molecules than the original descriptor space across both 2D and 3D
+        visualizations.
       </p>
 
       <h3>Ranking Score vs. Experimental Affinity</h3>
-
       <p>
         We also evaluated the relationship between the model's learned ranking score
         and experimentally measured binding affinity on a held-out test set.
       </p>
-
       <p>
         A strong positive relationship indicates that molecules assigned higher
         ranking scores by the model also tend to exhibit stronger experimental
@@ -215,174 +194,287 @@
         Figure: Learned ranking score versus experimentally measured pKi on the
         held-out test set (Spearman ρ = 0.8457).
       </p>
-
-      <p>
-        Taken together, these results suggest that the latent space has learned a
-        biologically meaningful organization that preserves molecular information
-        while simultaneously improving affinity-related separation.
-      </p>
     </section>
 
     <section>
       <h2>Visualization Interpretation</h2>
 
       <h3>Raw Feature Space vs. Latent Space</h3>
-
       <p>
         The raw feature plots show UMAP and t-SNE applied directly to the original molecular descriptor features. These plots represent
         the structure of the data before it has passed through the learned model.
       </p>
-
       <p>
         The latent-space plots show UMAP and t-SNE applied to the model’s learned latent representation. These plots help us evaluate
         whether the model reorganizes molecules into a space that better reflects affinity and other learned molecular relationships.
       </p>
 
       <h3>UMAP vs. t-SNE</h3>
-
       <p>
-        UMAP and t-SNE are dimensionality-reduction methods used to visualize high-dimensional data in 3D. UMAP often emphasizes broader
-        neighborhood structure, while t-SNE often emphasizes local clusters. Because they preserve different aspects of structure,
-        comparing both can reveal whether patterns are stable or method-dependent.
+        UMAP and t-SNE are dimensionality-reduction methods used to visualize high-dimensional data in 2D or 3D. UMAP often emphasizes broader
+        neighborhood structure, while t-SNE often emphasizes local clusters.
       </p>
 
       <h3>True pKi</h3>
-
       <p>
         pKi is derived from Ki, where higher pKi generally indicates stronger binding affinity. In the plots colored by true pKi,
         higher-value regions represent molecules with stronger measured binding affinity, while lower pKi regions represent weaker binders.
       </p>
 
       <h3>Affinity Groups</h3>
-
-      <p>
-        Some visualizations divide molecules into three groups based on their measured affinity:
-      </p>
-
+      <p>Some visualizations divide molecules into three groups based on their measured affinity:</p>
       <ul>
         <li><strong>Strong binders</strong> — top 25% of pKi values</li>
         <li><strong>Middle 50%</strong> — intermediate pKi values</li>
         <li><strong>Weak binders</strong> — bottom 25% of pKi values</li>
       </ul>
-
-      <p>
-        This grouping makes it easier to visually assess whether the learned latent space separates strong and weak binders into distinct regions.
-      </p>
     </section>
 
     <section id="visualizations">
-      <h2>Interactive 3D Visualizations</h2>
+      <h2>Interactive 2D &amp; 3D Visualizations</h2>
 
       <p>
         These plots compare molecule embeddings from raw feature data and learned latent-space representations.
+        Each plot defaults to the 3D version, with an option to switch to the corresponding 2D projection.
       </p>
+
+      <div class="dataset-control">
+        <label for="dataset-select">Select Dataset:</label>
+        <select id="dataset-select">
+          <option value="orexin1" selected>Orexin1</option>
+          <option value="mu">Mu</option>
+        </select>
+      </div>
 
       <div class="plot-grid">
 
-      <div class="plot-card">
-        <h3>Raw Feature Space UMAP: True pKi</h3>
-        <p>UMAP applied directly to raw Orexin1 descriptor features.</p>
-        <iframe src="graphs/raw_umap_3d_pki.html"></iframe>
+        <div class="plot-card">
+          <h3>Raw Feature Space UMAP: True pKi</h3>
+          <p>UMAP applied directly to raw <span class="dataset-name">Orexin1</span> descriptor features.</p>
 
-        <a class="mobile-plot-link"
-          href="graphs/raw_umap_3d_pki.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="raw_umap_3d_pki.html"
+            data-file-2d="raw_umap_2d_pki.html"
+            src="graphs/orexin1/raw_umap_3d_pki.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/raw_umap_3d_pki.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Raw Feature Space t-SNE: True pKi</h3>
+          <p>t-SNE applied directly to raw <span class="dataset-name">Orexin1</span> descriptor features.</p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="raw_t_sne_3d_pki.html"
+            data-file-2d="raw_t_sne_2d_pki.html"
+            src="graphs/orexin1/raw_t_sne_3d_pki.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/raw_t_sne_3d_pki.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space UMAP: True pKi</h3>
+          <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 20</p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="umap_3d_pki_neighbors20_mindist01.html"
+            data-file-2d="umap_2d_pki_neighbors20_mindist01.html"
+            src="graphs/orexin1/umap_3d_pki_neighbors20_mindist01.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/umap_3d_pki_neighbors20_mindist01.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space UMAP: True pKi</h3>
+          <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200</p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="umap_3d_pki_neighbors200_mindist01.html"
+            data-file-2d="umap_2d_pki_neighbors200_mindist01.html"
+            src="graphs/orexin1/umap_3d_pki_neighbors200_mindist01.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/umap_3d_pki_neighbors200_mindist01.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space UMAP: Affinity Groups</h3>
+          <p>
+            UMAP projection of the learned latent space grouped by true pKi:
+            weak binders, middle 50%, and strong binders.
+            UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200
+          </p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="umap_3d_affinity_groups_neighbors200_mindist01.html"
+            data-file-2d="umap_2d_affinity_groups_neighbors200_mindist01.html"
+            src="graphs/orexin1/umap_3d_affinity_groups_neighbors200_mindist01.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/umap_3d_affinity_groups_neighbors200_mindist01.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space t-SNE: True pKi</h3>
+          <p>Perplexity = 30</p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="t_sne_3d_pki_perplexity30.html"
+            data-file-2d="t_sne_2d_pki_perplexity30.html"
+            src="graphs/orexin1/t_sne_3d_pki_perplexity30.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/t_sne_3d_pki_perplexity30.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
+        <div class="plot-card">
+          <h3>Latent Space t-SNE: True pKi</h3>
+          <p>Perplexity = 1000</p>
+
+          <div class="plot-toggle">
+            <button class="plot-toggle-btn active" data-view="3d">3D</button>
+            <button class="plot-toggle-btn" data-view="2d">2D</button>
+          </div>
+
+          <iframe
+            data-file-3d="t_sne_3d_pki_perplexity1000.html"
+            data-file-2d="t_sne_2d_pki_perplexity1000.html"
+            src="graphs/orexin1/t_sne_3d_pki_perplexity1000.html">
+          </iframe>
+
+          <a class="mobile-plot-link" href="graphs/orexin1/t_sne_3d_pki_perplexity1000.html" target="_blank" rel="noopener noreferrer">
+            Open Interactive Plot
+          </a>
+        </div>
+
       </div>
-
-      <div class="plot-card">
-        <h3>Raw Feature Space t-SNE: True pKi</h3>
-        <p>t-SNE applied directly to raw Orexin1 descriptor features.</p>
-        <iframe src="graphs/raw_t_sne_3d_pki.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/raw_t_sne_3d_pki.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-      <div class="plot-card">
-        <h3>Latent Space UMAP: True pKi</h3>
-        <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 20</p>
-        <iframe src="graphs/umap_3d_pki_neighbors20_mindist01.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/umap_3d_pki_neighbors20_mindist01.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-      <div class="plot-card">
-        <h3>Latent Space UMAP: True pKi</h3>
-        <p>UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200</p>
-        <iframe src="graphs/umap_3d_pki_neighbors200_mindist01.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/umap_3d_pki_neighbors200_mindist01.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-      <div class="plot-card">
-        <h3>Latent Space UMAP: Affinity Groups</h3>
-        <p>
-          UMAP projection of the learned latent space grouped by true pKi:
-          weak binders, middle 50%, and strong binders.
-          UMAP_MIN_DIST = 0.1, UMAP_N_NEIGHBORS = 200
-        </p>
-
-        <iframe src="graphs/umap_3d_affinity_groups_neighbors200_mindist01.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/umap_3d_affinity_groups_neighbors200_mindist01.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-      <div class="plot-card">
-        <h3>Latent Space t-SNE: True pKi</h3>
-        <p>Perplexity = 30</p>
-        <iframe src="graphs/t_sne_3d_pki_perplexity30.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/t_sne_3d_pki_perplexity30.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-      <div class="plot-card">
-        <h3>Latent Space t-SNE: True pKi</h3>
-        <p>Perplexity = 1000</p>
-        <iframe src="graphs/t_sne_3d_pki_perplexity1000.html"></iframe>
-
-        <a class="mobile-plot-link"
-          href="graphs/t_sne_3d_pki_perplexity1000.html"
-          target="_blank"
-          rel="noopener noreferrer">
-          Open Interactive Plot
-        </a>
-      </div>
-
-</div>
     </section>
-
   </main>
 
   <footer>
     <p>Drug Molecule Project</p>
   </footer>
 
+  <script>
+    const datasetSelect = document.getElementById("dataset-select");
+
+    function datasetLabel(dataset) {
+      if (dataset === "mu") {
+        return "Mu";
+      }
+
+      return "Orexin1";
+    }
+
+    function currentDataset() {
+      return datasetSelect ? datasetSelect.value : "orexin1";
+    }
+
+    function buildGraphPath(dataset, filename) {
+      return `graphs/${dataset}/${filename}`;
+    }
+
+    function updateDatasetLabels(dataset) {
+      document.querySelectorAll(".dataset-name").forEach((span) => {
+        span.textContent = datasetLabel(dataset);
+      });
+    }
+
+    function updatePlotSource(card) {
+      const iframe = card.querySelector("iframe");
+      const mobileLink = card.querySelector(".mobile-plot-link");
+      const activeButton = card.querySelector(".plot-toggle-btn.active");
+
+      if (!iframe || !activeButton) {
+        return;
+      }
+
+      const selectedView = activeButton.getAttribute("data-view");
+      const filename =
+        selectedView === "2d"
+          ? iframe.getAttribute("data-file-2d")
+          : iframe.getAttribute("data-file-3d");
+
+      if (!filename) {
+        console.error("Missing plot filename:", selectedView, iframe);
+        return;
+      }
+
+      const nextSrc = buildGraphPath(currentDataset(), filename);
+
+      iframe.setAttribute("src", nextSrc);
+
+      if (mobileLink) {
+        mobileLink.setAttribute("href", nextSrc);
+      }
+    }
+
+    document.querySelectorAll(".plot-card").forEach((card) => {
+      const buttons = card.querySelectorAll(".plot-toggle-btn");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          buttons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+          updatePlotSource(card);
+        });
+      });
+    });
+
+    if (datasetSelect) {
+      datasetSelect.addEventListener("change", () => {
+        updateDatasetLabels(currentDataset());
+
+        document.querySelectorAll(".plot-card").forEach((card) => {
+          updatePlotSource(card);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
