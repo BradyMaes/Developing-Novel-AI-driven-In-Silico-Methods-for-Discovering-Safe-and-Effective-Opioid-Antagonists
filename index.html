@@ -118,21 +118,33 @@
 
     <section>
       <h2>Latent Space Organization and Affinity Separation</h2>
+
       <p>
         One of the primary goals of our model is not only to reconstruct molecular
         descriptors, but also to organize molecules in a latent representation that
         reflects biologically meaningful binding behavior.
       </p>
+
       <p>
         To evaluate this, we compared dimensionality-reduction visualizations
         generated directly from the raw molecular descriptor space against
         visualizations generated from the model's learned latent space.
       </p>
+
       <p>
-        We measured how well strong binders and weak binders separate by training a
-        simple logistic classifier on the projected coordinates and computing the
-        Area Under the Receiver Operating Characteristic Curve (AUC).
+        These AUC values use high-vs-low affinity classification from projected UMAP
+        and t-SNE coordinates. UMAP was generated with
+        <strong>n_neighbors = 20</strong> and <strong>min_dist = 0.1</strong>.
+        t-SNE was generated with <strong>perplexity = 30</strong>.
       </p>
+
+      <div class="dataset-control">
+        <label for="metrics-dataset-select">Select Dataset:</label>
+        <select id="metrics-dataset-select">
+          <option value="orexin1" selected>Orexin1</option>
+          <option value="mu">Mu</option>
+        </select>
+      </div>
 
       <table class="results-table">
         <thead>
@@ -147,52 +159,53 @@
         <tbody>
           <tr>
             <td>Raw Molecular Features</td>
-            <td>0.8506</td>
-            <td>0.7873</td>
-            <td>0.8239</td>
-            <td>0.7822</td>
+            <td id="raw-2d-umap">0.8506</td>
+            <td id="raw-2d-tsne">0.7873</td>
+            <td id="raw-3d-umap">0.8239</td>
+            <td id="raw-3d-tsne">0.7822</td>
           </tr>
           <tr>
             <td>Learned Latent Representation</td>
-            <td>0.9822</td>
-            <td>0.9929</td>
-            <td>0.9918</td>
-            <td>0.9932</td>
+            <td id="latent-2d-umap">0.9822</td>
+            <td id="latent-2d-tsne">0.9929</td>
+            <td id="latent-3d-umap">0.9918</td>
+            <td id="latent-3d-tsne">0.9932</td>
           </tr>
         </tbody>
       </table>
 
-      <p>
-        These results indicate that the learned latent representation provides
-        substantially better separation between high-affinity and low-affinity
-        molecules than the original descriptor space across both 2D and 3D
-        visualizations.
+      <p id="metrics-summary-text">
+        For the Orexin1 dataset, these results indicate that the learned latent representation provides
+        substantially better separation between high-affinity and low-affinity molecules than the original
+        descriptor space across both 2D and 3D visualizations.
       </p>
 
       <h3>Ranking Score vs. Experimental Affinity</h3>
+
       <p>
         We also evaluated the relationship between the model's learned ranking score
         and experimentally measured binding affinity on a held-out test set.
       </p>
+
       <p>
         A strong positive relationship indicates that molecules assigned higher
         ranking scores by the model also tend to exhibit stronger experimental
-        binding affinity. The model achieved a Spearman rank correlation of
-        <strong>ρ = 0.8457</strong>, demonstrating strong agreement between the
-        learned ranking and the true affinity ordering of molecules.
+        binding affinity. For the selected dataset, the model achieved a Spearman
+        rank correlation of <strong id="spearman-value">ρ = 0.8457</strong>.
       </p>
 
       <div class="figure-container">
         <img
-          src="images/spearman_correlation.png"
+          id="spearman-figure"
+          src="images/spearman_correlation_orexin1.png"
           alt="Spearman correlation between learned ranking score and true pKi"
           class="result-figure"
         >
       </div>
 
-      <p class="figure-caption">
+      <p class="figure-caption" id="spearman-caption">
         Figure: Learned ranking score versus experimentally measured pKi on the
-        held-out test set (Spearman ρ = 0.8457).
+        Orexin1 held-out test set (Spearman ρ = 0.8457).
       </p>
     </section>
 
@@ -239,8 +252,8 @@
       </p>
 
       <div class="dataset-control">
-        <label for="dataset-select">Select Dataset:</label>
-        <select id="dataset-select">
+        <label for="plot-dataset-select">Select Dataset:</label>
+        <select id="plot-dataset-select">
           <option value="orexin1" selected>Orexin1</option>
           <option value="mu">Mu</option>
         </select>
@@ -250,7 +263,7 @@
 
         <div class="plot-card">
           <h3>Raw Feature Space UMAP: True pKi</h3>
-          <p>UMAP applied directly to raw <span class="dataset-name">Orexin1</span> descriptor features.</p>
+          <p>UMAP applied directly to raw <span class="plot-dataset-name">Orexin1</span> descriptor features.</p>
 
           <div class="plot-toggle">
             <button class="plot-toggle-btn active" data-view="3d">3D</button>
@@ -270,7 +283,7 @@
 
         <div class="plot-card">
           <h3>Raw Feature Space t-SNE: True pKi</h3>
-          <p>t-SNE applied directly to raw <span class="dataset-name">Orexin1</span> descriptor features.</p>
+          <p>t-SNE applied directly to raw <span class="plot-dataset-name">Orexin1</span> descriptor features.</p>
 
           <div class="plot-toggle">
             <button class="plot-toggle-btn active" data-view="3d">3D</button>
@@ -401,26 +414,74 @@
   </footer>
 
   <script>
-    const datasetSelect = document.getElementById("dataset-select");
+    const metricsDatasetSelect = document.getElementById("metrics-dataset-select");
+    const plotDatasetSelect = document.getElementById("plot-dataset-select");
+
+    const metricsData = {
+      orexin1: {
+        raw2dUmap: "0.8506",
+        raw2dTsne: "0.7873",
+        raw3dUmap: "0.8239",
+        raw3dTsne: "0.7822",
+        latent2dUmap: "0.9822",
+        latent2dTsne: "0.9929",
+        latent3dUmap: "0.9918",
+        latent3dTsne: "0.9932",
+        spearman: "ρ = 0.8457",
+        spearmanImage: "images/spearman_correlation_orexin1.png",
+        caption:
+          "Figure: Learned ranking score versus experimentally measured pKi on the Orexin1 held-out test set (Spearman ρ = 0.8457).",
+        summary:
+          "For the Orexin1 dataset, these results indicate that the learned latent representation provides substantially better separation between high-affinity and low-affinity molecules than the original descriptor space across both 2D and 3D visualizations."
+      },
+
+      mu: {
+        raw2dUmap: "0.7555",
+        raw2dTsne: "0.7139",
+        raw3dUmap: "0.7875",
+        raw3dTsne: "0.8002",
+        latent2dUmap: "0.9851",
+        latent2dTsne: "0.9868",
+        latent3dUmap: "0.9874",
+        latent3dTsne: "0.9867",
+        spearman: "ρ = 0.8379",
+        spearmanImage: "images/spearman_correlation_mu.png",
+        caption:
+          "Figure: Learned ranking score versus experimentally measured pKi on the Mu held-out test set (Spearman ρ = 0.8379).",
+        summary:
+          "For the Mu dataset, these results indicate that the learned latent representation provides substantially better separation between high-affinity and low-affinity molecules than the original descriptor space across both 2D and 3D visualizations."
+      }
+    };
 
     function datasetLabel(dataset) {
-      if (dataset === "mu") {
-        return "Mu";
-      }
-
-      return "Orexin1";
-    }
-
-    function currentDataset() {
-      return datasetSelect ? datasetSelect.value : "orexin1";
+      return dataset === "mu" ? "Mu" : "Orexin1";
     }
 
     function buildGraphPath(dataset, filename) {
       return `graphs/${dataset}/${filename}`;
     }
 
-    function updateDatasetLabels(dataset) {
-      document.querySelectorAll(".dataset-name").forEach((span) => {
+    function updateMetrics(dataset) {
+      const data = metricsData[dataset];
+
+      document.getElementById("raw-2d-umap").textContent = data.raw2dUmap;
+      document.getElementById("raw-2d-tsne").textContent = data.raw2dTsne;
+      document.getElementById("raw-3d-umap").textContent = data.raw3dUmap;
+      document.getElementById("raw-3d-tsne").textContent = data.raw3dTsne;
+
+      document.getElementById("latent-2d-umap").textContent = data.latent2dUmap;
+      document.getElementById("latent-2d-tsne").textContent = data.latent2dTsne;
+      document.getElementById("latent-3d-umap").textContent = data.latent3dUmap;
+      document.getElementById("latent-3d-tsne").textContent = data.latent3dTsne;
+
+      document.getElementById("spearman-value").textContent = data.spearman;
+      document.getElementById("spearman-figure").src = data.spearmanImage;
+      document.getElementById("spearman-caption").textContent = data.caption;
+      document.getElementById("metrics-summary-text").textContent = data.summary;
+    }
+
+    function updatePlotDatasetLabels(dataset) {
+      document.querySelectorAll(".plot-dataset-name").forEach((span) => {
         span.textContent = datasetLabel(dataset);
       });
     }
@@ -435,22 +496,19 @@
       }
 
       const selectedView = activeButton.getAttribute("data-view");
+
       const filename =
         selectedView === "2d"
           ? iframe.getAttribute("data-file-2d")
           : iframe.getAttribute("data-file-3d");
 
-      if (!filename) {
-        console.error("Missing plot filename:", selectedView, iframe);
-        return;
-      }
+      const dataset = plotDatasetSelect ? plotDatasetSelect.value : "orexin1";
+      const nextSrc = buildGraphPath(dataset, filename);
 
-      const nextSrc = buildGraphPath(currentDataset(), filename);
-
-      iframe.setAttribute("src", nextSrc);
+      iframe.src = nextSrc;
 
       if (mobileLink) {
-        mobileLink.setAttribute("href", nextSrc);
+        mobileLink.href = nextSrc;
       }
     }
 
@@ -466,15 +524,26 @@
       });
     });
 
-    if (datasetSelect) {
-      datasetSelect.addEventListener("change", () => {
-        updateDatasetLabels(currentDataset());
+    if (metricsDatasetSelect) {
+      metricsDatasetSelect.addEventListener("change", () => {
+        updateMetrics(metricsDatasetSelect.value);
+      });
+
+      updateMetrics(metricsDatasetSelect.value);
+    }
+
+    if (plotDatasetSelect) {
+      plotDatasetSelect.addEventListener("change", () => {
+        updatePlotDatasetLabels(plotDatasetSelect.value);
 
         document.querySelectorAll(".plot-card").forEach((card) => {
           updatePlotSource(card);
         });
       });
+
+      updatePlotDatasetLabels(plotDatasetSelect.value);
     }
   </script>
+
 </body>
 </html>
